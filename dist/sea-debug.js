@@ -3,11 +3,6 @@
  */
 (function(global, undefined) {
 
-// Avoid conflicting when `sea.js` is loaded multiple times
-if (global.seajs) {
-  return
-}
-
 var seajs = global.seajs = {
   // The current version of Sea.js being used
   version: "3.0.3"
@@ -26,7 +21,7 @@ function isType(type) {
 }
 
 var isString = isType("String")
-var isArray = Array.isArray || isType("Array")
+var isArray = Array.isArray
 var isFunction = isType("Function")
 
 var _cid = 0
@@ -89,7 +84,6 @@ function normalize(path) {
       path.indexOf("?") > 0 ||
       lastC === 47 /* "/" */) ? path : path + ".js"
 }
-
 
 var PATHS_RE = /^([^/:]+)(\/.+)$/
 var VARS_RE = /{([^{]+)}/g
