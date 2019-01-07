@@ -15,7 +15,6 @@ var seajs = global.seajs = {
 
 var data = seajs.data = {}
 
-
 /**
  * util-lang.js - The minimal language enhancement
  */
@@ -26,7 +25,6 @@ function isType(type) {
   }
 }
 
-var isObject = isType("Object")
 var isString = isType("String")
 var isArray = Array.isArray || isType("Array")
 var isFunction = isType("Function")
@@ -34,64 +32,6 @@ var isFunction = isType("Function")
 var _cid = 0
 function cid() {
   return _cid++
-}
-
-/**
- * util-events.js - The minimal events support
- */
-
-var events = data.events = {}
-
-// Bind event
-seajs.on = function(name, callback) {
-  var list = events[name] || (events[name] = [])
-  list.push(callback)
-  return seajs
-}
-
-// Remove event. If `callback` is undefined, remove all callbacks for the
-// event. If `event` and `callback` are both undefined, remove all callbacks
-// for all events
-seajs.off = function(name, callback) {
-  // Remove *all* events
-  if (!(name || callback)) {
-    events = data.events = {}
-    return seajs
-  }
-
-  var list = events[name]
-  if (list) {
-    if (callback) {
-      for (var i = list.length - 1; i >= 0; i--) {
-        if (list[i] === callback) {
-          list.splice(i, 1)
-        }
-      }
-    }
-    else {
-      delete events[name]
-    }
-  }
-
-  return seajs
-}
-
-// Emit event, firing all bound callbacks. Callbacks receive the same
-// arguments as `emit` does, apart from the event name
-var emit = seajs.emit = function(name, data) {
-  var list = events[name]
-
-  if (list) {
-    // Copy callback lists to prevent modification
-    list = list.slice()
-
-    // Execute event callbacks, use index because it's the faster.
-    for(var i = 0, len = list.length; i < len; i++) {
-      list[i](data)
-    }
-  }
-
-  return seajs
 }
 
 /**
@@ -285,14 +225,11 @@ loaderDir = dirname(loaderPath || cwd)
 var doc = document
 var head = doc.head || doc.getElementsByTagName("head")[0] || doc.documentElement
 
-var currentlyAddingScript
-
-function request(url, callback) {
+seajs.request = function (url, callback) {
   var node = doc.createElement("script")
 
   node.onload = onload
   node.onerror = function() {
-    emit("error", { uri: url, node: node })
     onload(true)
   }
 
@@ -300,13 +237,11 @@ function request(url, callback) {
     callback(error)
   }
 
+  node.async = true
   node.src = url
 
   head.appendChild(node)
 }
-
-// For Developers
-seajs.request = request
 
 /**
  * util-deps.js - The parser for dependencies
@@ -329,7 +264,6 @@ function parseDependencies(code) {
 
   return ret
 }
-
 
 /**
  * module.js - The core of module loader
@@ -437,7 +371,6 @@ Module.prototype.load = function() {
     mod.onload()
     return
   }
-  console.log(mod)
 
   // Begin parallel loading
   var requestCache = {}
@@ -448,8 +381,7 @@ Module.prototype.load = function() {
 
     if (m.status < STATUS.FETCHING) {
       m.fetch(requestCache)
-    }
-    else if (m.status === STATUS.SAVED) {
+    } else if (m.status === STATUS.SAVED) {
       m.load()
     }
   }
@@ -543,9 +475,6 @@ Module.prototype.exec = function () {
   mod.exports = exports
   mod.status = STATUS.EXECUTED
 
-  // Emit `exec` event
-  emit("exec", mod)
-
   return mod.exports
 }
 
@@ -558,7 +487,6 @@ Module.prototype.fetch = function(requestCache) {
 
   // Emit `fetch` event for plugins such as combo plugin
   var emitData = { uri: uri }
-  emit("fetch", emitData)
   var requestUri = emitData.requestUri || uri
 
   // Empty uri or a non-CMD module
@@ -576,13 +504,11 @@ Module.prototype.fetch = function(requestCache) {
   callbackList[requestUri] = [mod]
 
   // Emit `request` event for plugins such as text plugin
-  emit("request", emitData = {
+  emitData = {
     uri: uri,
     requestUri: requestUri,
-    onRequest: onRequest,
-    charset: isFunction(data.charset) ? data.charset(requestUri) : data.charset,
-    crossorigin: isFunction(data.crossorigin) ? data.crossorigin(requestUri) : data.crossorigin
-  })
+    charset: data.charset,
+  }
 
   if (!emitData.requested) {
     requestCache ?
@@ -591,39 +517,36 @@ Module.prototype.fetch = function(requestCache) {
   }
 
   function sendRequest() {
-    seajs.request(emitData.requestUri, emitData.onRequest, emitData.charset, emitData.crossorigin)
+    seajs.request(emitData.requestUri, function (error) {
+      delete fetchingList[requestUri]
+      fetchedList[requestUri] = true
+  
+      // Save meta data of anonymous module
+      if (anonymousMeta) {
+        Module.save(uri, anonymousMeta)
+        anonymousMeta = null
+      }
+  
+      // Call callbacks
+      var m, mods = callbackList[requestUri]
+      delete callbackList[requestUri]
+      while ((m = mods.shift())) {
+        // When 404 occurs, the params error will be true
+        if(error === true) {
+          m.error()
+        } else {
+          m.load()
+        }
+      }
+    })
   }
 
-  function onRequest(error) {
-    delete fetchingList[requestUri]
-    fetchedList[requestUri] = true
-
-    // Save meta data of anonymous module
-    if (anonymousMeta) {
-      Module.save(uri, anonymousMeta)
-      anonymousMeta = null
-    }
-
-    // Call callbacks
-    var m, mods = callbackList[requestUri]
-    delete callbackList[requestUri]
-    while ((m = mods.shift())) {
-      // When 404 occurs, the params error will be true
-      if(error === true) {
-        m.error()
-      }
-      else {
-        m.load()
-      }
-    }
-  }
 }
 
 // Resolve id to uri
 Module.resolve = function(id, refUri) {
   // Emit `resolve` event for plugins such as text plugin
   var emitData = { id: id, refUri: refUri }
-  emit("resolve", emitData)
 
   return emitData.uri || seajs.resolve(emitData.id, refUri)
 }
@@ -703,17 +626,10 @@ Module.use = function (ids, callback, uri) {
     if (callback) {
       callback.apply(global, exports)
     }
-
-    delete mod.callback
-    delete mod.history
-    delete mod.remain
-    delete mod._entry
   }
 
   mod.load()
 }
-
-// Public API
 
 seajs.use = function(ids, callback) {
   Module.use(ids, callback, data.cwd + "_use_" + cid())
@@ -722,22 +638,6 @@ seajs.use = function(ids, callback) {
 
 Module.define.cmd = {}
 global.define = Module.define
-
-
-// For Developers
-
-seajs.Module = Module
-data.fetchedList = fetchedList
-data.cid = cid
-
-seajs.require = function(id) {
-  var mod = Module.get(Module.resolve(id))
-  if (mod.status < STATUS.EXECUTING) {
-    mod.onload()
-    mod.exec()
-  }
-  return mod.exports
-}
 
 /**
  * config.js - The configuration for the loader
@@ -757,51 +657,5 @@ data.cwd = cwd
 
 // The charset for requesting files
 data.charset = "utf-8"
-
-// @Retention(RetentionPolicy.SOURCE)
-// The CORS options, Don't set CORS on default.
-//
-//data.crossorigin = undefined
-
-// data.alias - An object containing shorthands of module id
-// data.paths - An object containing path shorthands in module id
-// data.vars - The {xxx} variables in module id
-// data.map - An array containing rules to map module uri
-// data.debug - Debug mode. The default value is false
-
-seajs.config = function(configData) {
-
-  for (var key in configData) {
-    var curr = configData[key]
-    var prev = data[key]
-
-    // Merge object config such as alias, vars
-    if (prev && isObject(prev)) {
-      for (var k in curr) {
-        prev[k] = curr[k]
-      }
-    }
-    else {
-      // Concat array config such as map
-      if (isArray(prev)) {
-        curr = prev.concat(curr)
-      }
-      // Make sure that `data.base` is an absolute path
-      else if (key === "base") {
-        // Make sure end with "/"
-        if (curr.slice(-1) !== "/") {
-          curr += "/"
-        }
-        curr = addBase(curr)
-      }
-
-      // Set config
-      data[key] = curr
-    }
-  }
-
-  emit("config", configData)
-  return seajs
-}
 
 })(this);

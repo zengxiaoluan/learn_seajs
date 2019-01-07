@@ -1,5 +1,4 @@
-define('foo', ['https://vuejs.org/js/vue.min.js', 'bar'], function(require, exports, module) {
-  // console.log(arguments)
+define('foo', function(require, exports, module) {
   var bar = require('bar');
 
   new Vue({
