@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <!-- <script id="seajsnode" src="./dist/sea-debug.js"></script> -->
+  <script id="seajsnode" src="../dist/sea.js"></script>
+  <script>
+    seajs.use(['a'], function (foo) {
+      try {
+        console.log(cachedModules)
+        console.log(foo)
+      } catch (error) {
+        
+      }
+    })
+  </script>
+</head>
+<body>
+  <h1>hello, seajs.</h1>
+  <div id="app">{{msg}}</div>
+</body>
+</html>
