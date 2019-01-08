@@ -1,5 +1,5 @@
-define('foo', function(require, exports, module) {
-  var bar = require('bar');
+define('file:///D:/zengxiaoluan/learn_seajs/dist/foo.js', ['file:///D:/zengxiaoluan/learn_seajs/dist/bar.js', 'https://vuejs.org/js/vue.min.js'], function(require, exports, module) {
+  var bar = require('file:///D:/zengxiaoluan/learn_seajs/dist/bar.js');
 
   new Vue({
     el: '#app',
@@ -9,4 +9,6 @@ define('foo', function(require, exports, module) {
   });
 
   require('https://vuejs.org/js/vue.min.js');
+
+  module.exports = 'foo';
 });

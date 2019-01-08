@@ -203,16 +203,9 @@ var doc = document
 var scripts = doc.scripts
 
 // Recommend to add `seajsnode` id for the `sea.js` script element
-var loaderScript = doc.getElementById("seajsnode") ||
-  scripts[scripts.length - 1]
+var loaderScript = doc.getElementById("seajsnode")
 
-function getScriptAbsoluteSrc(node) {
-  return node.hasAttribute ? // non-IE6/7
-    node.src :
-    // see http://msdn.microsoft.com/en-us/library/ms536429(VS.85).aspx
-    node.getAttribute("src", 4)
-}
-loaderPath = getScriptAbsoluteSrc(loaderScript)
+loaderPath = loaderScript.src
 // When `sea.js` is inline, set loaderDir to current working directory
 loaderDir = dirname(loaderPath || cwd)
 
@@ -324,9 +317,6 @@ Module.prototype.pass = function() {
         entry.history[m.uri] = true
         count++
         m._entry.push(entry)
-        if(m.status === STATUS.LOADING) {
-          m.pass()
-        }
       }
     }
     // If has passed the entry to it's dependencies, modify the entry's count and del it in the module
@@ -342,14 +332,8 @@ Module.prototype.pass = function() {
 Module.prototype.load = function() {
   var mod = this
 
-  // If the module is being loaded, just wait it onload call
-  if (mod.status >= STATUS.LOADING) {
-    return
-  }
-
   mod.status = STATUS.LOADING
 
-  // Emit `load` event for plugins such as combo plugin
   var uris = mod.resolve()
   
   for (var i = 0, len = uris.length; i < len; i++) {
@@ -479,7 +463,6 @@ Module.prototype.fetch = function(requestCache) {
 
   mod.status = STATUS.FETCHING
 
-  // Emit `fetch` event for plugins such as combo plugin
   var emitData = { uri: uri }
   var requestUri = emitData.requestUri || uri
 
@@ -500,8 +483,7 @@ Module.prototype.fetch = function(requestCache) {
   // Emit `request` event for plugins such as text plugin
   emitData = {
     uri: uri,
-    requestUri: requestUri,
-    charset: data.charset,
+    requestUri: requestUri
   }
 
   if (!emitData.requested) {
@@ -604,7 +586,7 @@ Module.get = function(uri, deps) {
 // Use function is equal to load a anonymous module
 Module.use = function (ids, callback, uri) {
   var mod = Module.get(uri, isArray(ids) ? ids : [ids])
-
+  
   mod._entry.push(mod)
   mod.history = {}
   mod.remain = 1
@@ -648,8 +630,5 @@ data.loader = loaderPath
 
 // The current working directory
 data.cwd = cwd
-
-// The charset for requesting files
-data.charset = "utf-8"
 
 })(this);

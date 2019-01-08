@@ -5,9 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
-  <script src="./dist/sea-debug.js"></script>
+  <!-- <script id="seajsnode" src="./dist/sea-debug.js"></script> -->
+  <script id="seajsnode" src="./dist/sea-zxl.js"></script>
   <script>
-    seajs.use('foo')
+    seajs.use(['file:///D:/zengxiaoluan/learn_seajs/dist/foo.js'], function (foo) {
+      try {
+        console.log(cachedModules)
+        console.log(foo)
+      } catch (error) {
+        
+      }
+    })
   </script>
 </head>
 <body>
