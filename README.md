@@ -1,27 +1,5 @@
-A Module Loader for the Web
+Learn the seajs source code to understand browser module solution deeply.
 ===
 
-Sea.js is a module loader for the web. It is designed to change the way that you
-organize JavaScript. With Sea.js, it is pleasure to build scalable web applications.
+The sea.js core code can reduce to about 200 line, you can get in [here](https://github.com/zengxiaoluan/learn_seajs/blob/master/dist/sea-zxl.js), that's it all secret.
 
-The official site: <https://seajs.github.io/seajs/>
-
-[![Build Status](https://secure.travis-ci.org/seajs/seajs.png?branch=master)](https://travis-ci.org/seajs/seajs)
-
-
-## Questions?
-
-If you have any questions, please feel free to ask through [New Issue](https://github.com/seajs/seajs/issues/new).
-
-
-### Reporting an Issue
-
-Make sure the problem you're addressing is reproducible.
-Use <http://jsbin.com/> or <http://jsfiddle.net/> to provide a test page.
-Indicate what browsers the issue can be reproduced in.
-What version of Sea.js is the issue reproducible in. Is it reproducible after updating to the latest version?
-
-
-## License
-
-Sea.js is available under the terms of the [MIT License](https://github.com/seajs/seajs/blob/master/LICENSE.md).
