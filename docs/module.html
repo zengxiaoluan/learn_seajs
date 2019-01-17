@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+
+  <h1>Open your console see the outputs.</h1>
+
+  <script type="module">
+    import module, {hello} from './js/module.js';
+    hello(module)
+  </script>
+  
+  <script src="https://unpkg.com/hotkeys-js@3.4.3/dist/hotkeys.js"></script>
+  <script type="text/javascript">
+    // define shortcuts with a scope
+    hotkeys('ctrl+a+ctrl+b', 'wcj', function(){
+      console.log('do something');
+      console.log(hotkeys.getPressedKeyCodes())
+      // hotkeys.setScope('zxl');
+    });
+
+    hotkeys('shift+ctrl+z', 'zxl', function(){ 
+      console.log('do something else');
+      hotkeys.setScope('wcj'); // default scope is 'all'
+    });
+    
+    hotkeys.setScope('wcj'); // default scope is 'all'
+  </script>
+</body>
+</html>
