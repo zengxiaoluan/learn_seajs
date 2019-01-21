@@ -40,7 +40,7 @@
     mod.remain = 1;
     
     mod.callback = function () {
-      var exports = []
+      var exports = [];
       var dependencies = mod.dependencies;
 
       for (var i = 0, len = dependencies.length; i < len; i++) {
